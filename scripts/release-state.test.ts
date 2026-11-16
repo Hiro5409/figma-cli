@@ -1,0 +1,150 @@
+import { afterAll, afterEach, beforeAll, expect, test } from "bun:test";
+import { createHash } from "node:crypto";
+
+import { HttpResponse, http } from "msw/http";
+
+import { createNetwork } from "../test/network.ts";
+import { releaseState } from "./release-state.ts";
+
+const input = {
+  name: "@hiro5409/figma-cli",
+  version: "1.2.3",
+  repository: "Hiro5409/figma-cli",
+  filename: "hiro5409-figma-cli-1.2.3.tgz",
+  bytes: Buffer.from("tested artifact"),
+  token: "test-token",
+};
+const published = {
+  dist: { integrity: `sha512-${createHash("sha512").update(input.bytes).digest("base64")}` },
+};
+const asset = {
+  name: input.filename,
+  digest: `sha256:${createHash("sha256").update(input.bytes).digest("hex")}`,
+};
+
+const npmUrl = "https://registry.npmjs.org/%40hiro5409%2Ffigma-cli/1.2.3";
+const releaseUrl = "https://api.github.com/repos/Hiro5409/figma-cli/releases/tags/v1.2.3";
+
+const network = createNetwork();
+
+beforeAll(() => network.enable());
+afterEach(() => network.resetHandlers());
+afterAll(() => network.disable());
+
+test.each([
+  { npm: false, release: false },
+  { npm: true, release: false },
+  { npm: true, release: true },
+])("resumes npm=$npm release=$release", async (state) => {
+  network.use(
+    http.get(npmUrl, ({ request }) => {
+      expect(request.headers.has("authorization")).toBe(false);
+      return state.npm ? HttpResponse.json(published) : new HttpResponse(null, { status: 404 });
+    }),
+    http.get(releaseUrl, ({ request }) => {
+      expect(request.headers.get("authorization")).toBe("Bearer test-token");
+      return state.release
+        ? HttpResponse.json({ assets: [asset] })
+        : new HttpResponse(null, { status: 404 });
+    }),
+  );
+  await expect(releaseState(input)).resolves.toEqual({
+    npmPublished: state.npm,
+    releaseExists: state.release,
+  });
+});
+
+test("waits for npm to serve a published version before reading GitHub", async () => {
+  let npmLookups = 0;
+  let releaseLookups = 0;
+  network.use(
+    http.get(npmUrl, () => {
+      npmLookups += 1;
+      return npmLookups < 3
+        ? new HttpResponse(null, { status: 404 })
+        : HttpResponse.json(published);
+    }),
+    http.get(releaseUrl, () => {
+      releaseLookups += 1;
+      return new HttpResponse(null, { status: 404 });
+    }),
+  );
+  await expect(
+    releaseState({ ...input, npmWait: { timeoutMs: 60_000, intervalMs: 1 } }),
+  ).resolves.toEqual({ npmPublished: true, releaseExists: false });
+  expect(releaseLookups).toBe(1);
+});
+
+test("stops waiting when npm does not serve the version in time", async () => {
+  network.use(http.get(npmUrl, () => new HttpResponse(null, { status: 404 })));
+  await expect(
+    releaseState({ ...input, npmWait: { timeoutMs: 20, intervalMs: 5 } }),
+  ).rejects.toThrow("npm is not serving @hiro5409/figma-cli@1.2.3");
+});
+
+test("stops waiting when the npm lookup fails", async () => {
+  let npmLookups = 0;
+  network.use(
+    http.get(npmUrl, () => {
+      npmLookups += 1;
+      return new HttpResponse(null, { status: npmLookups < 2 ? 404 : 503 });
+    }),
+  );
+  await expect(
+    releaseState({ ...input, npmWait: { timeoutMs: 60_000, intervalMs: 1 } }),
+  ).rejects.toThrow("HTTP 503");
+  expect(npmLookups).toBe(2);
+});
+
+test("stops waiting when npm serves different contents", async () => {
+  let npmLookups = 0;
+  network.use(
+    http.get(npmUrl, () => {
+      npmLookups += 1;
+      return npmLookups < 2
+        ? new HttpResponse(null, { status: 404 })
+        : HttpResponse.json({ dist: { integrity: "different" } });
+    }),
+  );
+  await expect(
+    releaseState({ ...input, npmWait: { timeoutMs: 60_000, intervalMs: 1 } }),
+  ).rejects.toThrow("Published npm artifact differs");
+});
+
+test.each([403, 429, 500])("does not interpret HTTP %i as unpublished", async (status) => {
+  network.use(http.get(npmUrl, () => new HttpResponse(null, { status })));
+  await expect(releaseState(input)).rejects.toThrow(`HTTP ${status}`);
+});
+
+test("stops when an existing npm version has different contents", async () => {
+  network.use(http.get(npmUrl, () => HttpResponse.json({ dist: { integrity: "different" } })));
+  await expect(releaseState(input)).rejects.toThrow("Published npm artifact differs");
+});
+
+test("stops when the GitHub lookup fails after npm publication", async () => {
+  network.use(
+    http.get(npmUrl, () => HttpResponse.json(published)),
+    http.get(releaseUrl, () => new HttpResponse(null, { status: 503 })),
+  );
+  await expect(releaseState(input)).rejects.toThrow("HTTP 503");
+});
+
+test("does not overwrite a different existing release asset", async () => {
+  network.use(
+    http.get(npmUrl, () => HttpResponse.json(published)),
+    http.get(releaseUrl, () => HttpResponse.json({ assets: [{ ...asset, digest: "different" }] })),
+  );
+  await expect(releaseState(input)).rejects.toThrow("Existing release asset differs");
+});
+
+test("stops when an existing release is missing the tested artifact", async () => {
+  network.use(
+    http.get(npmUrl, () => HttpResponse.json(published)),
+    http.get(releaseUrl, () =>
+      HttpResponse.json({ assets: [{ ...asset, name: "hiro5409-figma-cli-1.2.2.tgz" }] }),
+    ),
+  );
+  await expect(releaseState(input)).rejects.toThrow(
+    "Existing release is missing hiro5409-figma-cli-1.2.3.tgz",
+  );
+});
