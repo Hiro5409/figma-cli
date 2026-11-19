@@ -275,7 +275,9 @@ function formatChanges(changes: ReadonlyArray<OasChange>): Array<string> {
 
 async function validateGeneratedClient(workingCopy: string): Promise<Array<ValidationResult>> {
   const validations: ReadonlyArray<{ command: Array<string>; name: string }> = [
-    { command: ["bun", "run", "check:static"], name: "static checks" },
+    { command: ["bun", "run", "check:format"], name: "format" },
+    { command: ["bun", "run", "check:types"], name: "types" },
+    { command: ["bun", "run", "lint"], name: "lint" },
     { command: ["bun", "run", "test"], name: "test" },
   ];
 

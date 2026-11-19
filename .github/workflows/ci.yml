@@ -37,12 +37,12 @@ jobs:
       - name: Set up tools
         uses: jdx/mise-action@6612f0ef07ed2a736cd1e00a94a065522dd41195 # v5.2.5
         with:
-          install_args: bun node gh
+          install_args: bun gh
           # This job packs the artifact that the Release workflow publishes, so its tools never come from a cache.
           cache: false
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: bun ci
 
       - name: Audit dependencies
         run: bun audit --audit-level=high

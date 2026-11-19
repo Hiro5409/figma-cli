@@ -1790,8 +1790,7 @@ export type HandleGetDeveloperLogsResponse = {
  */
 export function handleGetDeveloperLogs(
   response?:
-    | HandleGetDeveloperLogsResponse
-    | HttpResponseResolver<never, GetDeveloperLogsData["body"]>,
+    HandleGetDeveloperLogsResponse | HttpResponseResolver<never, GetDeveloperLogsData["body"]>,
   options?: RequestHandlerOptions,
 ): HttpHandler {
   return http.post<never, GetDeveloperLogsData["body"]>(
@@ -2078,8 +2077,7 @@ export type HandlePostDevResourcesResponse = {
  */
 export function handlePostDevResources(
   response?:
-    | HandlePostDevResourcesResponse
-    | HttpResponseResolver<never, PostDevResourcesData["body"]>,
+    HandlePostDevResourcesResponse | HttpResponseResolver<never, PostDevResourcesData["body"]>,
   options?: RequestHandlerOptions,
 ): HttpHandler {
   return http.post<never, PostDevResourcesData["body"]>(
@@ -2114,8 +2112,7 @@ export type HandlePutDevResourcesResponse = {
  */
 export function handlePutDevResources(
   response?:
-    | HandlePutDevResourcesResponse
-    | HttpResponseResolver<never, PutDevResourcesData["body"]>,
+    HandlePutDevResourcesResponse | HttpResponseResolver<never, PutDevResourcesData["body"]>,
   options?: RequestHandlerOptions,
 ): HttpHandler {
   return http.put<never, PutDevResourcesData["body"]>(
@@ -2725,8 +2722,7 @@ export type CreateMswHandlersResult = {
   all: (options?: {
     pick?: {
       [K in keyof MswHandlerFactories]?:
-        | Parameters<MswHandlerFactories[K]>[0]
-        | Parameters<MswHandlerFactories[K]>;
+        Parameters<MswHandlerFactories[K]>[0] | Parameters<MswHandlerFactories[K]>;
     };
   }) => ReadonlyArray<HttpHandler>;
   pick: MswHandlerFactories;

@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { cli } from "gunshi";
-import { HttpResponse, http } from "msw/http";
+import { http, HttpResponse } from "msw/http";
 
 import { useStoredToken } from "../../../test/config.ts";
 import { createNetwork } from "../../../test/network.ts";
