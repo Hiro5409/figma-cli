@@ -1,6 +1,6 @@
 import { afterAll, afterEach, beforeAll, describe, expect, test } from "bun:test";
 
-import { HttpResponse, http } from "msw/http";
+import { http, HttpResponse } from "msw/http";
 
 import { createNetwork } from "../../test/network.ts";
 import { handleGetMe } from "../types/figma/msw.gen.ts";

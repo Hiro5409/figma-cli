@@ -7,7 +7,7 @@ export default defineConfig({
   input: figmaApiSchemaUrl,
   output: {
     path: "src/types/figma",
-    postProcess: [{ name: "Vite+ format", command: "vp", args: ["fmt", "{{path}}"] }],
+    postProcess: [{ name: "Bun format", command: "bun", args: ["fmt", "{{path}}"] }],
   },
   parser: {
     filters: {

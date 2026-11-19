@@ -277,10 +277,7 @@ export type HasFramePropertiesTrait = {
    * Whether a node has primary axis scrolling, horizontal or vertical.
    */
   overflowDirection?:
-    | "HORIZONTAL_SCROLLING"
-    | "VERTICAL_SCROLLING"
-    | "HORIZONTAL_AND_VERTICAL_SCROLLING"
-    | "NONE";
+    "HORIZONTAL_SCROLLING" | "VERTICAL_SCROLLING" | "HORIZONTAL_AND_VERTICAL_SCROLLING" | "NONE";
   /**
    * Whether this layer uses auto-layout to position its children.
    */
@@ -1825,11 +1822,7 @@ export type BaseNoiseEffect = {
 export type NoiseEffect = MonotoneNoiseEffect | MultitoneNoiseEffect | DuotoneNoiseEffect;
 
 export type Effect =
-  | DropShadowEffect
-  | InnerShadowEffect
-  | BlurEffect
-  | TextureEffect
-  | NoiseEffect;
+  DropShadowEffect | InnerShadowEffect | BlurEffect | TextureEffect | NoiseEffect;
 
 /**
  * A set of properties that can be applied to nodes and published. Styles for a property can be created in the corresponding property's panel while editing a file.
@@ -2480,12 +2473,7 @@ export type UpdateMediaRuntimeAction =
       type: "UPDATE_MEDIA_RUNTIME";
       destinationId: string | null;
       mediaAction:
-        | "PLAY"
-        | "PAUSE"
-        | "TOGGLE_PLAY_PAUSE"
-        | "MUTE"
-        | "UNMUTE"
-        | "TOGGLE_MUTE_UNMUTE";
+        "PLAY" | "PAUSE" | "TOGGLE_PLAY_PAUSE" | "MUTE" | "UNMUTE" | "TOGGLE_MUTE_UNMUTE";
     }
   | {
       type: "UPDATE_MEDIA_RUNTIME";
@@ -2656,12 +2644,7 @@ export type VariableData = {
  * Defines the types of data a VariableData object can hold
  */
 export type VariableDataType =
-  | "BOOLEAN"
-  | "FLOAT"
-  | "STRING"
-  | "COLOR"
-  | "VARIABLE_ALIAS"
-  | "EXPRESSION";
+  "BOOLEAN" | "FLOAT" | "STRING" | "COLOR" | "VARIABLE_ALIAS" | "EXPRESSION";
 
 /**
  * Defines the types of data a VariableData object can eventually equal
@@ -3132,11 +3115,7 @@ export type CreateFolderRequest = {
    * The audience that can access the folder. Workspace audiences require the specified team to belong to a workspace.
    */
   sharing_audience_control:
-    | "plan_view"
-    | "plan_edit"
-    | "invite_only"
-    | "workspace_view"
-    | "workspace_edit";
+    "plan_view" | "plan_edit" | "invite_only" | "workspace_view" | "workspace_edit";
 };
 
 /**
@@ -3159,11 +3138,7 @@ export type Folder = {
    * The audience that can access the folder.
    */
   sharing_audience_control?:
-    | "plan_view"
-    | "plan_edit"
-    | "invite_only"
-    | "workspace_view"
-    | "workspace_edit";
+    "plan_view" | "plan_edit" | "invite_only" | "workspace_view" | "workspace_edit";
   /**
    * The time at which the folder was created.
    */
@@ -4552,14 +4527,7 @@ export type VariableModeValue = {
  * The value for the variable. The value must match the variable's type. If setting to a variable alias, the alias must resolve to this type. If overriding a value, the value type must match the variable's type. If removing an overridden value, the value must be `null`.
  */
 export type VariableValue =
-  | boolean
-  | number
-  | string
-  | Rgb
-  | Rgba
-  | VariableAlias
-  | VariableComposedColor
-  | null;
+  boolean | number | string | Rgb | Rgba | VariableAlias | VariableComposedColor | null;
 
 /**
  * A color with an independently authored opacity.
@@ -5028,11 +4996,7 @@ export type CreateTeamRequest = {
    * The audience that can discover and join the team. Workspace audiences require a workspace_id.
    */
   sharing_audience_control:
-    | "org_view"
-    | "org_edit"
-    | "invite_only"
-    | "workspace_view"
-    | "workspace_edit";
+    "org_view" | "org_edit" | "invite_only" | "workspace_view" | "workspace_edit";
   /**
    * Whether organization members can discover an invite-only team. Required for invite_only and not accepted for other audiences.
    */
@@ -5077,11 +5041,7 @@ export type Team = {
    * The audience that can discover and join the team.
    */
   sharing_audience_control:
-    | "org_view"
-    | "org_edit"
-    | "invite_only"
-    | "workspace_view"
-    | "workspace_edit";
+    "org_view" | "org_edit" | "invite_only" | "workspace_view" | "workspace_edit";
   /**
    * Whether organization members can discover an invite-only team.
    */
@@ -6141,11 +6101,7 @@ export type PostTeamFolderResponses = {
      * The audience that can access the folder.
      */
     sharing_audience_control:
-      | "plan_view"
-      | "plan_edit"
-      | "invite_only"
-      | "workspace_view"
-      | "workspace_edit";
+      "plan_view" | "plan_edit" | "invite_only" | "workspace_view" | "workspace_edit";
     /**
      * The time at which the folder was created.
      */
@@ -9681,8 +9637,7 @@ export type GetLibraryAnalyticsComponentUsagesResponses = {
      * An array of analytics data.
      */
     rows:
-      | Array<LibraryAnalyticsComponentUsagesByAsset>
-      | Array<LibraryAnalyticsComponentUsagesByFile>;
+      Array<LibraryAnalyticsComponentUsagesByAsset> | Array<LibraryAnalyticsComponentUsagesByFile>;
     /**
      * Whether there is a next page of data that can be fetched.
      */
@@ -9984,8 +9939,7 @@ export type GetLibraryAnalyticsVariableActionsResponses = {
      * An array of analytics data.
      */
     rows:
-      | Array<LibraryAnalyticsVariableActionsByAsset>
-      | Array<LibraryAnalyticsVariableActionsByTeam>;
+      Array<LibraryAnalyticsVariableActionsByAsset> | Array<LibraryAnalyticsVariableActionsByTeam>;
     /**
      * Whether there is a next page of data that can be fetched.
      */
@@ -10081,8 +10035,7 @@ export type GetLibraryAnalyticsVariableUsagesResponses = {
      * An array of analytics data.
      */
     rows:
-      | Array<LibraryAnalyticsVariableUsagesByAsset>
-      | Array<LibraryAnalyticsVariableUsagesByFile>;
+      Array<LibraryAnalyticsVariableUsagesByAsset> | Array<LibraryAnalyticsVariableUsagesByFile>;
     /**
      * Whether there is a next page of data that can be fetched.
      */

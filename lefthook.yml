@@ -4,8 +4,16 @@ lefthook: mise exec -- lefthook
 pre-commit:
   piped: true
   jobs:
-    - name: staged
-      run: mise exec -- vp staged
+    # Lint fixes come before formatting, so the staged result is formatted.
+    - name: lint
+      glob: "*.ts"
+      run: mise exec -- bun run lint --fix --no-error-on-unmatched-pattern {staged_files}
+      stage_fixed: true
+    - name: types
+      glob: "*.ts"
+      run: mise exec -- bun check --no-script {staged_files}
+    - name: format
+      run: mise exec -- bun fmt --staged
     - name: gitleaks
       run: mise exec -- gitleaks git --pre-commit --staged --no-banner --redact
 
@@ -19,4 +27,4 @@ pre-push:
 post-checkout:
   jobs:
     - name: install
-      run: test -d node_modules || mise exec -- bun install --frozen-lockfile
+      run: test -d node_modules || mise exec -- bun ci
