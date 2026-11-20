@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - "v*"
-  # Retries a failed release from its tag.
   workflow_dispatch:
 
 permissions: {}
@@ -51,7 +50,6 @@ jobs:
     needs: check
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # npm's trusted publisher for this package names no GitHub environment, so the job sets none.
     permissions:
       contents: read
       id-token: write
@@ -59,7 +57,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # npm publishes through trusted publishing, which Bun does not support.
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24.22.2"
@@ -100,13 +97,11 @@ jobs:
         with:
           name: npm-package
           path: ${{ runner.temp }}/package
-      # npm scans a new version before serving it, so publishing returns before the version is visible.
       - name: Inspect publication state
         id: state
         env:
           GH_TOKEN: ${{ github.token }}
         run: bun scripts/release-state.ts "$RUNNER_TEMP"/package/*.tgz --wait
-      # gh attaches the artifact to a draft and then publishes it, because an immutable release locks its assets once published.
       - name: Create GitHub Release with tested npm artifact
         if: steps.state.outputs.releaseExists == 'false'
         env:
