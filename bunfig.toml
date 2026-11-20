@@ -2,7 +2,6 @@
 minimumReleaseAge = 86400
 
 [run]
-# Scripts and executables started by `bun run` use Bun in place of Node.js.
 bun = true
 
 [fmt]

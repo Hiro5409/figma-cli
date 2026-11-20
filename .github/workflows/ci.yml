@@ -2,7 +2,6 @@ name: CI
 
 on:
   push:
-    # A pull request checks its branch, and the Release workflow calls this one for a pushed tag.
     branches:
       - main
   pull_request:
@@ -87,7 +86,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # 秘匿情報の検査は全履歴が対象
           fetch-depth: 0
           persist-credentials: false
 

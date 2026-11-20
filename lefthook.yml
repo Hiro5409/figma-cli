@@ -1,4 +1,3 @@
-# Git hooks run the Lefthook version pinned in mise.toml, whatever PATH Git inherits.
 lefthook: mise exec -- lefthook
 
 pre-commit:
@@ -7,19 +6,19 @@ pre-commit:
     # Lint fixes come before formatting, so the staged result is formatted.
     - name: lint
       glob: "*.ts"
-      run: mise exec -- bun run lint --fix --no-error-on-unmatched-pattern {staged_files}
+      run: bun run lint --fix --no-error-on-unmatched-pattern {staged_files}
       stage_fixed: true
     - name: types
       glob: "*.ts"
-      run: mise exec -- bun check --no-script {staged_files}
+      run: bun check --no-script {staged_files}
     - name: format
-      run: mise exec -- bun fmt --staged
+      run: bun fmt --ignore-unknown {staged_files}
+      stage_fixed: true
     - name: gitleaks
-      run: mise exec -- gitleaks git --pre-commit --staged --no-banner --redact
+      run: gitleaks git --pre-commit --staged --no-banner --redact
 
 pre-push:
   jobs:
-    # A script job runs on every push; a run job is skipped when the push carries no files.
     - name: audit
       script: audit.sh
       runner: sh
@@ -27,4 +26,4 @@ pre-push:
 post-checkout:
   jobs:
     - name: install
-      run: test -d node_modules || mise exec -- bun ci
+      run: test -d node_modules || bun ci
