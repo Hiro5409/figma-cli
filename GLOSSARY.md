@@ -1,6 +1,6 @@
 # Figma CLI
 
-The CLI reads Figma files, their comments, and the components and styles a library publishes, and posts comments, as the user who owns the token.
+The CLI calls the Figma REST API as the user or organization that owns the token: it reads Files and what a Library publishes, and it writes Comments, Variables, webhooks, and dev resources.
 
 ## Language
 
@@ -13,7 +13,7 @@ An item in a File's document tree, such as a page or a layer, addressed by an ID
 _Avoid_: Layer ID, element
 
 **Comment**:
-A message in a File. A root comment starts a thread and can be pinned to a Node; a reply belongs to its root's thread and has no position of its own.
+A message in a File. A root comment starts a thread, can be pinned to a Node, and alone carries the thread's resolution; a reply is created by sending its root's ID as `comment_id`, names that root as `parent_id`, and has no position of its own.
 _Avoid_: Thread, annotation
 
 **Version**:
@@ -21,7 +21,7 @@ A saved point in a File's history, either autosaved or named by a user.
 _Avoid_: Revision, snapshot
 
 **Library**:
-A File that publishes Components and Styles for other Files to use. Only published items are listed.
+A File that publishes Components, Styles, and Variables for other Files to use. Only published items are listed.
 _Avoid_: Design system
 
 **Component**:
@@ -32,9 +32,16 @@ _Avoid_: Symbol
 A named color, text, effect, or grid setting that a Library publishes.
 _Avoid_: Design token, variable
 
+**Variable**:
+A named value, such as a color or a number, in one of a File's variable collections. A Library can publish Variables.
+_Avoid_: Design token
+
 **Personal access token**:
 A token that acts as the Figma user who generated it, within the scopes chosen when it was generated, until it expires or is revoked.
 _Avoid_: API key, password
+
+**Plan access token**:
+A token that acts for an organization's plan rather than a user, within its scopes. Some operations, such as activity logs, accept only this kind.
 
 **Profile**:
 A named local entry that stores one Personal access token. Several Profiles can belong to the same Figma user.

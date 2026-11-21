@@ -2,20 +2,24 @@ import ky, { isHTTPError } from "ky";
 
 import { OutcomeUnknownError } from "../errors.ts";
 import { client } from "../types/figma/client.gen.ts";
+import type { GetMeErrors, GetMeResponses } from "../types/figma/types.gen.ts";
 import { figmaApiError, retryAfterSeconds } from "./api-error.ts";
 
 export { client };
 
+export const getMe = () => client.get<GetMeResponses, GetMeErrors, true>({ url: "/v1/me" });
+
 const MAX_RETRY_AFTER_SECONDS = 60;
 const REQUEST_TIMEOUT_MS = 120_000;
 
-// Only reads are safe to retry automatically; a retried write can post a comment twice.
+// Only reads are retried: a retried write can apply twice, such as posting a comment twice.
 const apiFetch = Object.assign(
   async (request: Parameters<typeof fetch>[0]) => {
     try {
       return await ky(request, {
         retry: {
-          methods: ["get", "head"],
+          methods:
+            request instanceof Request && !isWrite(request) ? [request.method.toLowerCase()] : [],
           shouldRetry: ({ error }) => {
             if (!isHTTPError(error) || error.response.status !== 429) return undefined;
             const wait = retryAfterSeconds(error.response.headers);
@@ -23,6 +27,8 @@ const apiFetch = Object.assign(
           },
         },
         timeout: REQUEST_TIMEOUT_MS,
+        // A cross-origin redirect would forward X-Figma-Token, which fetch does not strip.
+        redirect: "error",
       });
     } catch (error) {
       if (
@@ -45,8 +51,12 @@ const apiFetch = Object.assign(
   { preconnect: fetch.preconnect },
 );
 
+// Figma searches developer logs with POST.
+const READS_SENT_AS_POST = new Set(["/v1/developer_logs"]);
+
 function isWrite(request: Request): boolean {
-  return request.method !== "GET" && request.method !== "HEAD";
+  if (request.method === "GET" || request.method === "HEAD") return false;
+  return !(request.method === "POST" && READS_SENT_AS_POST.has(new URL(request.url).pathname));
 }
 
 export function configureClient(accessToken: string): void {
