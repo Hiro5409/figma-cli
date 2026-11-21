@@ -14,11 +14,28 @@
 
 Figma already provides an [official MCP server](https://developers.figma.com/docs/figma-mcp-server/), which works on the canvas.
 It cannot post comments or read version history; the REST API can.
-figma-cli gives coding agents with shell access small Figma operations: every result is compact JSON on stdout, every error is compact JSON on stderr, and writes have `--dry-run` previews.
+figma-cli gives coding agents with shell access small Figma operations: every result is compact JSON on stdout, every error is one line of JSON on stderr, and every API command accepts `--dry-run`.
 
 ## Generated from the official schema
 
-The API client is generated from Figma's maintained [OpenAPI specification](https://github.com/figma/rest-api-spec).
+Every operation in Figma's [OpenAPI specification](https://github.com/figma/rest-api-spec) that accepts a personal or plan access token is a command named `figma-api <resource> <action>`. Operations that accept only OAuth tokens are not commands, because figma-cli sends `X-Figma-Token`.
+
+```bash
+figma-api file show --file-key <key> --depth 1
+figma-api file node list --file-key <key> --ids 1:2,3:4
+figma-api image render --file-key <key> --ids 1:2 --format svg
+figma-api file version list --file-key <key> --all
+figma-api file comment create --file-key <key> --body '{"message":"Align this with the grid","client_meta":{"node_id":"1:2","node_offset":{"x":0,"y":0}}}' --dry-run
+figma-api file comment reaction create --file-key <key> --comment-id 123456 --body '{"emoji":":+1:"}'
+```
+
+Path and query parameters are flags, and a request body is one `--body` JSON object, given inline, as `@<path>` to a file, or as `-` for standard input. Numbers in flags and the body must be finite, and integers must lie within ±(2^53 - 1). `figma-api schema <resource> <action>` prints the JSON Schema of the request, and every request is validated against it before it is sent. Each command's `--help` names the token scope that Figma's schema lists for it, and whether it needs a plan access token.
+
+`--dry-run` prints the request, including its body, without sending it. Pass a secret in a body, such as the token filter of `developer-log list`, as `@<path>` or `-` rather than inline. `--all` reads every page of a list that Figma pages, following the next page that Figma returns. Writes are never retried automatically; an `OUTCOME_UNKNOWN` error means Figma may have applied the write, so read the affected resource before retrying.
+
+A figma.com URL holds the IDs these commands take: `https://www.figma.com/design/<key>/<name>?node-id=1-2` names file key `<key>` and node ID `1:2`. A branch URL, `https://www.figma.com/design/<key>/branch/<branch key>/<name>`, is addressed by its branch key.
+
+`image render` returns image URLs that expire. Downloading them needs no token, for example with `curl -o frame.png "<url>"`.
 
 ## Quick Start
 
@@ -39,9 +56,8 @@ The command is `figma-api`. The `figma` command belongs to Figma's [Code Connect
 ```bash
 figma-api --help
 figma-api <command> --help
+figma-api schema file comment create
 ```
-
-Each command's `--help` names the token scope it needs.
 
 ### Authentication
 
@@ -54,7 +70,7 @@ figma-api auth status
 figma-api profile list
 ```
 
-The CLI never accepts a token as a command argument, which shells and process lists record. `auth login` prompts for it without echoing it, or reads it from standard input with `--with-token`. Stored tokens live in `~/.config/figma-cli/credentials.json` with mode `600`.
+The CLI never takes the token it authenticates with as a command argument, which shells and process lists record. `auth login` prompts for it without echoing it, or reads it from standard input with `--with-token`. Stored tokens live in `~/.config/figma-cli/credentials.json` with mode `600`.
 
 A command uses the first token it finds in this order:
 
@@ -63,55 +79,11 @@ A command uses the first token it finds in this order:
 3. The stored profile named by `FIGMA_PROFILE`.
 4. The default profile, or the only stored one.
 
-Personal access tokens expire within 90 days. When Figma rejects one, store a new token with `auth login --replace`.
-
-### Files
-
-`--file` takes a file key, or a URL copied from the file or a layer. A URL's `node-id` selects the node for commands that act on nodes, and pins a new comment.
-
-```bash
-figma-api file meta --file "https://www.figma.com/design/<key>/<name>"
-figma-api file show --file <key> --depth 1
-figma-api file nodes --file "https://www.figma.com/design/<key>/<name>?node-id=1-2"
-figma-api version list --file <key> --limit 10
-```
-
-A file's full document can be very large. Limit `file show` with `--depth` or `--node`.
-
-### Images
-
-```bash
-figma-api image export --file <key> --node 1:2 --node 3:4 --scale 2 --output-dir exports
-figma-api image export --file <key> --node 1:2 --image-format svg
-figma-api image fills --file <key>
-```
-
-Without `--output-dir`, `image export` prints download URLs, which expire. With it, the images are saved as `<node id>.<format>` and existing files are never overwritten. The downloads go to Figma's image storage without the token. When Figma returns no image for some nodes, the command saves the others, prints every result, and fails with `PARTIAL_SUCCESS`, or with `UPSTREAM_FAILURE` when no node rendered.
-
-### Libraries
-
-```bash
-figma-api component list --file <key>
-figma-api style list --file <key>
-```
-
-Both list only what a library file publishes; a file that publishes nothing lists nothing. Each variant of a component set is its own component, and names its set in `containing_frame.containingComponentSet`.
-
-### Comments
-
-```bash
-figma-api comment list --file <key> --unresolved
-figma-api comment create --file <key> --node 1:2 --message "Align this with the grid" --dry-run
-figma-api comment create --file <key> --reply-to 123456 --message "Fixed"
-figma-api comment delete --file <key> --id 123456
-figma-api comment reaction add --file <key> --comment-id 123456 --emoji ":+1:"
-```
-
-Comments and reactions are posted as the token's user. A new thread is pinned to `--node`, or to the node in a `--file` URL, offset by `--x` and `--y`; `--reply-to` adds to an existing thread and keeps its position. Only the author can delete a comment.
+A plan access token, which commands such as `activity-log list` need, works through `FIGMA_ACCESS_TOKEN`; `auth login` stores only personal access tokens. Personal access tokens expire within 90 days. When Figma rejects one, store a new token with `auth login --replace`.
 
 ### Errors and retries
 
-Errors are one line of JSON on stderr with a stable `code`, the exit code, and `why` and `hint` fields. Reads are retried on transient failures. When Figma asks to wait more than a minute, the command fails at once with `RATE_LIMITED` and the wait in its hint. Writes are never retried. An `OUTCOME_UNKNOWN` error means Figma may have accepted the write; read the comments before trying again.
+Errors are one line of JSON on stderr with a stable `code`, the exit code, and `why` and `hint` fields. Reads are retried on transient failures. When Figma asks to wait more than a minute, the command fails at once with `RATE_LIMITED` and the wait in its hint.
 
 ## Calling from Agents
 

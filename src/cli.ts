@@ -1,119 +1,34 @@
 import { cli, define } from "gunshi";
-import { renderHeader } from "gunshi/renderer";
 
+import { apiCommands } from "./api-commands.ts";
+import { commandGroup, requireSubcommand } from "./command-group.ts";
 import { loginCommand } from "./commands/auth/login.ts";
 import { logoutCommand } from "./commands/auth/logout.ts";
 import { statusCommand } from "./commands/auth/status.ts";
-import { commentCreateCommand } from "./commands/comment/create.ts";
-import { commentDeleteCommand } from "./commands/comment/delete.ts";
-import { commentListCommand } from "./commands/comment/list.ts";
-import { commentReactionAddCommand } from "./commands/comment/reaction-add.ts";
-import { commentReactionDeleteCommand } from "./commands/comment/reaction-delete.ts";
-import { componentListCommand } from "./commands/component/list.ts";
-import { fileMetaCommand } from "./commands/file/meta.ts";
-import { fileNodesCommand } from "./commands/file/nodes.ts";
-import { fileShowCommand } from "./commands/file/show.ts";
-import { imageExportCommand } from "./commands/image/export.ts";
-import { imageFillsCommand } from "./commands/image/fills.ts";
 import { profileListCommand } from "./commands/profile/list.ts";
 import { profileSetDefaultCommand } from "./commands/profile/set-default.ts";
-import { styleListCommand } from "./commands/style/list.ts";
-import { versionListCommand } from "./commands/version/list.ts";
 import { printError } from "./error-output.ts";
 import { CliError } from "./errors.ts";
 import { globalArgs } from "./global-args.ts";
 import { writeOutput } from "./output/write.ts";
+import { commands as figmaCommands } from "./types/figma/commands.gen.ts";
 
-function requireSubcommand(): never {
-  throw new CliError("A subcommand is required.", {
-    code: "INVALID_INPUT",
-    why: "This command only groups subcommands.",
-  });
-}
+const generated = apiCommands(figmaCommands);
 
 const commands = {
-  auth: define({
-    name: "auth",
-    description: "Store, check, and remove personal access tokens",
-    subCommands: {
-      login: loginCommand,
-      logout: logoutCommand,
-      status: statusCommand,
-    },
-    run: requireSubcommand,
+  auth: commandGroup("auth", "Store, check, and remove personal access tokens", {
+    login: loginCommand,
+    logout: logoutCommand,
+    status: statusCommand,
   }),
-  profile: define({
-    name: "profile",
-    description: "List stored profiles and choose a default",
-    subCommands: {
-      list: profileListCommand,
-      "set-default": profileSetDefaultCommand,
-    },
-    run: requireSubcommand,
-  }),
-  file: define({
-    name: "file",
-    description: "Read file documents, nodes, and metadata",
-    subCommands: {
-      show: fileShowCommand,
-      nodes: fileNodesCommand,
-      meta: fileMetaCommand,
-    },
-    run: requireSubcommand,
-  }),
-  image: define({
-    name: "image",
-    description: "Render nodes and fetch image fills",
-    subCommands: {
-      export: imageExportCommand,
-      fills: imageFillsCommand,
-    },
-    run: requireSubcommand,
-  }),
-  component: define({
-    name: "component",
-    description: "List a library file's published components",
-    subCommands: {
-      list: componentListCommand,
-    },
-    run: requireSubcommand,
-  }),
-  style: define({
-    name: "style",
-    description: "List a library file's published styles",
-    subCommands: {
-      list: styleListCommand,
-    },
-    run: requireSubcommand,
-  }),
-  version: define({
-    name: "version",
-    description: "Read a file's version history",
-    subCommands: {
-      list: versionListCommand,
-    },
-    run: requireSubcommand,
-  }),
-  comment: define({
-    name: "comment",
-    description: "Read, post, and delete comments and reactions",
-    subCommands: {
-      list: commentListCommand,
-      create: commentCreateCommand,
-      delete: commentDeleteCommand,
-      reaction: define({
-        name: "reaction",
-        description: "Add and remove comment reactions",
-        subCommands: {
-          add: commentReactionAddCommand,
-          delete: commentReactionDeleteCommand,
-        },
-        run: requireSubcommand,
-      }),
-    },
-    run: requireSubcommand,
+  profile: commandGroup("profile", "List stored profiles and choose a default", {
+    list: profileListCommand,
+    "set-default": profileSetDefaultCommand,
   }),
 };
+for (const name of Object.keys(generated)) {
+  if (name in commands) throw new Error(`A generated command group is named ${name}`);
+}
 
 const rootCommand = define({
   name: "figma-api",
@@ -122,8 +37,11 @@ const rootCommand = define({
   examples: `# Store a personal access token
 $ figma-api auth login
 
-# Read data for automation
-$ figma-api comment list --file "https://www.figma.com/design/<key>/<name>"`,
+# Read the comments in a file
+$ figma-api file comment list --file-key <key>
+
+# Inspect a request body before writing
+$ figma-api schema file comment create`,
   run: requireSubcommand,
 });
 
@@ -133,18 +51,27 @@ export async function main() {
   await cli(process.argv.slice(2), rootCommand, {
     name: "figma-api",
     version: pkg.default.version,
-    subCommands: commands,
+    subCommands: { ...commands, ...generated },
     strict: true,
-    renderHeader: (ctx) => {
-      if (!ctx.values.help) return Promise.resolve("");
-      return renderHeader(ctx);
-    },
+    renderHeader: null,
+    usageSilent: true,
     renderValidationErrors: null,
-    // gunshi has already printed --help and --version output.
-    onAfterCommand: (ctx, result) => {
-      if (ctx.values.help === true || ctx.values.version === true) return;
-      if (result) return writeOutput(result);
+    onBeforeCommand: (ctx) => {
+      const positionalsAllowed =
+        ctx.commandPath.length === 0 ||
+        Object.values(ctx.args).some((arg) => arg.type === "positional");
+      const extra = [
+        ...(positionalsAllowed ? [] : ctx.positionals.slice(ctx.commandPath.length)),
+        ...ctx.rest,
+      ];
+      if (extra.length > 0) {
+        throw new CliError(`Unexpected positional argument (${extra.length}).`, {
+          code: "INVALID_INPUT",
+          why: "This command takes no further positional arguments, so a subcommand name may be misspelled.",
+        });
+      }
     },
+    onAfterCommand: (_ctx, result) => (result ? writeOutput(result) : undefined),
     onErrorCommand: (ctx, error) => {
       printError(error, ctx.commandPath);
     },

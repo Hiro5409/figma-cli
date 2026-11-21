@@ -61,14 +61,6 @@ import type {
   PostCommentResponses,
   PostDevResourcesData,
   PostDevResourcesResponses,
-  PostFileDuplicateData,
-  PostFileDuplicateResponses,
-  PostTeamData,
-  PostTeamFolderData,
-  PostTeamFolderResponses,
-  PostTeamInvitesData,
-  PostTeamInvitesResponses,
-  PostTeamResponses,
   PostVariablesData,
   PostVariablesResponses,
   PostWebhookData,
@@ -89,9 +81,6 @@ export type HandleGetFileResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/files/{file_key}` operation.
- */
 export function handleGetFile(
   response?:
     | HandleGetFileResponse
@@ -135,9 +124,6 @@ export type HandleGetFileNodesResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/files/{file_key}/nodes` operation.
- */
 export function handleGetFileNodes(
   response?:
     | HandleGetFileNodesResponse
@@ -181,9 +167,6 @@ export type HandleGetImagesResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/images/{file_key}` operation.
- */
 export function handleGetImages(
   response?:
     | HandleGetImagesResponse
@@ -227,9 +210,6 @@ export type HandleGetImageFillsResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/files/{file_key}/images` operation.
- */
 export function handleGetImageFills(
   response?:
     | HandleGetImageFillsResponse
@@ -273,9 +253,6 @@ export type HandleGetFileMetaResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/files/{file_key}/meta` operation.
- */
 export function handleGetFileMeta(
   response?:
     | HandleGetFileMetaResponse
@@ -314,94 +291,11 @@ export function handleGetFileMeta(
   );
 }
 
-export type HandlePostFileDuplicateResponse = {
-  body: PostFileDuplicateResponses[200];
-  status?: 200;
-};
-
-/**
- * Handler for the `POST /v1/files/{file_key}/duplicate` operation.
- */
-export function handlePostFileDuplicate(
-  response?:
-    | HandlePostFileDuplicateResponse
-    | HttpResponseResolver<
-        {
-          file_key: string;
-        },
-        PostFileDuplicateData["body"]
-      >,
-  options?: RequestHandlerOptions,
-): HttpHandler {
-  return http.post<
-    {
-      file_key: string;
-    },
-    PostFileDuplicateData["body"]
-  >(
-    `${options?.baseUrl ?? "*"}/v1/files/:file_key/duplicate`,
-    (info) => {
-      if (typeof response === "function") {
-        return response(info);
-      }
-      const body = response?.body;
-      if (body !== undefined) {
-        return HttpResponse.json(body, { status: response?.status ?? 200 });
-      }
-      if (options?.responseFallback === "passthrough") {
-        return;
-      }
-      return new Response("Not Implemented", {
-        status: 501,
-        statusText: "Not Implemented",
-      });
-    },
-    options,
-  );
-}
-
-export type HandlePostTeamResponse = {
-  body: PostTeamResponses[200];
-  status?: 200;
-};
-
-/**
- * Handler for the `POST /v1/teams` operation.
- */
-export function handlePostTeam(
-  response?: HandlePostTeamResponse | HttpResponseResolver<never, PostTeamData["body"]>,
-  options?: RequestHandlerOptions,
-): HttpHandler {
-  return http.post<never, PostTeamData["body"]>(
-    `${options?.baseUrl ?? "*"}/v1/teams`,
-    (info) => {
-      if (typeof response === "function") {
-        return response(info);
-      }
-      const body = response?.body;
-      if (body !== undefined) {
-        return HttpResponse.json(body, { status: response?.status ?? 200 });
-      }
-      if (options?.responseFallback === "passthrough") {
-        return;
-      }
-      return new Response("Not Implemented", {
-        status: 501,
-        statusText: "Not Implemented",
-      });
-    },
-    options,
-  );
-}
-
 export type HandleGetTeamResponse = {
   body: GetTeamResponses[200];
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/teams/{team_id}` operation.
- */
 export function handleGetTeam(
   response?:
     | HandleGetTeamResponse
@@ -440,106 +334,11 @@ export function handleGetTeam(
   );
 }
 
-export type HandlePostTeamInvitesResponse = {
-  body: PostTeamInvitesResponses[200];
-  status?: 200;
-};
-
-/**
- * Handler for the `POST /v1/teams/{team_id}/invites` operation.
- */
-export function handlePostTeamInvites(
-  response?:
-    | HandlePostTeamInvitesResponse
-    | HttpResponseResolver<
-        {
-          team_id: string;
-        },
-        PostTeamInvitesData["body"]
-      >,
-  options?: RequestHandlerOptions,
-): HttpHandler {
-  return http.post<
-    {
-      team_id: string;
-    },
-    PostTeamInvitesData["body"]
-  >(
-    `${options?.baseUrl ?? "*"}/v1/teams/:team_id/invites`,
-    (info) => {
-      if (typeof response === "function") {
-        return response(info);
-      }
-      const body = response?.body;
-      if (body !== undefined) {
-        return HttpResponse.json(body, { status: response?.status ?? 200 });
-      }
-      if (options?.responseFallback === "passthrough") {
-        return;
-      }
-      return new Response("Not Implemented", {
-        status: 501,
-        statusText: "Not Implemented",
-      });
-    },
-    options,
-  );
-}
-
-export type HandlePostTeamFolderResponse = {
-  body: PostTeamFolderResponses[200];
-  status?: 200;
-};
-
-/**
- * Handler for the `POST /v1/teams/{team_id}/folders` operation.
- */
-export function handlePostTeamFolder(
-  response?:
-    | HandlePostTeamFolderResponse
-    | HttpResponseResolver<
-        {
-          team_id: string;
-        },
-        PostTeamFolderData["body"]
-      >,
-  options?: RequestHandlerOptions,
-): HttpHandler {
-  return http.post<
-    {
-      team_id: string;
-    },
-    PostTeamFolderData["body"]
-  >(
-    `${options?.baseUrl ?? "*"}/v1/teams/:team_id/folders`,
-    (info) => {
-      if (typeof response === "function") {
-        return response(info);
-      }
-      const body = response?.body;
-      if (body !== undefined) {
-        return HttpResponse.json(body, { status: response?.status ?? 200 });
-      }
-      if (options?.responseFallback === "passthrough") {
-        return;
-      }
-      return new Response("Not Implemented", {
-        status: 501,
-        statusText: "Not Implemented",
-      });
-    },
-    options,
-  );
-}
-
 export type HandleGetTeamFoldersResponse = {
   body: GetTeamFoldersResponses[200];
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v2/teams/{team_id}/folders` operation.
- */
 export function handleGetTeamFolders(
   response?:
     | HandleGetTeamFoldersResponse
@@ -583,9 +382,6 @@ export type HandleGetFolderFoldersResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v2/folders/{folder_id}/folders` operation.
- */
 export function handleGetFolderFolders(
   response?:
     | HandleGetFolderFoldersResponse
@@ -629,9 +425,6 @@ export type HandleGetFolderFilesResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v2/folders/{folder_id}/files` operation.
- */
 export function handleGetFolderFiles(
   response?:
     | HandleGetFolderFilesResponse
@@ -675,9 +468,6 @@ export type HandleGetFolderMetaResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v2/folders/{folder_id}/meta` operation.
- */
 export function handleGetFolderMeta(
   response?:
     | HandleGetFolderMetaResponse
@@ -721,9 +511,6 @@ export type HandleGetFileVersionsResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/files/{file_key}/versions` operation.
- */
 export function handleGetFileVersions(
   response?:
     | HandleGetFileVersionsResponse
@@ -767,9 +554,6 @@ export type HandleGetCommentsResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/files/{file_key}/comments` operation.
- */
 export function handleGetComments(
   response?:
     | HandleGetCommentsResponse
@@ -813,9 +597,6 @@ export type HandlePostCommentResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `POST /v1/files/{file_key}/comments` operation.
- */
 export function handlePostComment(
   response?:
     | HandlePostCommentResponse
@@ -859,9 +640,6 @@ export type HandleDeleteCommentResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `DELETE /v1/files/{file_key}/comments/{comment_id}` operation.
- */
 export function handleDeleteComment(
   response?:
     | HandleDeleteCommentResponse
@@ -907,9 +685,6 @@ export type HandleDeleteCommentReactionResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `DELETE /v1/files/{file_key}/comments/{comment_id}/reactions` operation.
- */
 export function handleDeleteCommentReaction(
   response?:
     | HandleDeleteCommentReactionResponse
@@ -955,9 +730,6 @@ export type HandleGetCommentReactionsResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/files/{file_key}/comments/{comment_id}/reactions` operation.
- */
 export function handleGetCommentReactions(
   response?:
     | HandleGetCommentReactionsResponse
@@ -1003,9 +775,6 @@ export type HandlePostCommentReactionResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `POST /v1/files/{file_key}/comments/{comment_id}/reactions` operation.
- */
 export function handlePostCommentReaction(
   response?:
     | HandlePostCommentReactionResponse
@@ -1051,9 +820,6 @@ export type HandleGetMeResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/me` operation.
- */
 export function handleGetMe(
   response?: HandleGetMeResponse | HttpResponseResolver<never, never>,
   options?: RequestHandlerOptions,
@@ -1085,9 +851,6 @@ export type HandleGetTeamComponentsResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/teams/{team_id}/components` operation.
- */
 export function handleGetTeamComponents(
   response?:
     | HandleGetTeamComponentsResponse
@@ -1131,9 +894,6 @@ export type HandleGetFileComponentsResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/files/{file_key}/components` operation.
- */
 export function handleGetFileComponents(
   response?:
     | HandleGetFileComponentsResponse
@@ -1177,9 +937,6 @@ export type HandleGetComponentResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/components/{key}` operation.
- */
 export function handleGetComponent(
   response?:
     | HandleGetComponentResponse
@@ -1223,9 +980,6 @@ export type HandleGetTeamComponentSetsResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/teams/{team_id}/component_sets` operation.
- */
 export function handleGetTeamComponentSets(
   response?:
     | HandleGetTeamComponentSetsResponse
@@ -1269,9 +1023,6 @@ export type HandleGetFileComponentSetsResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/files/{file_key}/component_sets` operation.
- */
 export function handleGetFileComponentSets(
   response?:
     | HandleGetFileComponentSetsResponse
@@ -1315,9 +1066,6 @@ export type HandleGetComponentSetResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/component_sets/{key}` operation.
- */
 export function handleGetComponentSet(
   response?:
     | HandleGetComponentSetResponse
@@ -1361,9 +1109,6 @@ export type HandleGetTeamStylesResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/teams/{team_id}/styles` operation.
- */
 export function handleGetTeamStyles(
   response?:
     | HandleGetTeamStylesResponse
@@ -1407,9 +1152,6 @@ export type HandleGetFileStylesResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/files/{file_key}/styles` operation.
- */
 export function handleGetFileStyles(
   response?:
     | HandleGetFileStylesResponse
@@ -1453,9 +1195,6 @@ export type HandleGetStyleResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/styles/{key}` operation.
- */
 export function handleGetStyle(
   response?:
     | HandleGetStyleResponse
@@ -1499,9 +1238,6 @@ export type HandleGetWebhooksResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v2/webhooks` operation.
- */
 export function handleGetWebhooks(
   response?: HandleGetWebhooksResponse | HttpResponseResolver<never, never>,
   options?: RequestHandlerOptions,
@@ -1533,9 +1269,6 @@ export type HandlePostWebhookResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `POST /v2/webhooks` operation.
- */
 export function handlePostWebhook(
   response?: HandlePostWebhookResponse | HttpResponseResolver<never, PostWebhookData["body"]>,
   options?: RequestHandlerOptions,
@@ -1567,9 +1300,6 @@ export type HandleDeleteWebhookResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `DELETE /v2/webhooks/{webhook_id}` operation.
- */
 export function handleDeleteWebhook(
   response?:
     | HandleDeleteWebhookResponse
@@ -1613,9 +1343,6 @@ export type HandleGetWebhookResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v2/webhooks/{webhook_id}` operation.
- */
 export function handleGetWebhook(
   response?:
     | HandleGetWebhookResponse
@@ -1659,9 +1386,6 @@ export type HandlePutWebhookResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `PUT /v2/webhooks/{webhook_id}` operation.
- */
 export function handlePutWebhook(
   response?:
     | HandlePutWebhookResponse
@@ -1705,9 +1429,6 @@ export type HandleGetWebhookRequestsResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v2/webhooks/{webhook_id}/requests` operation.
- */
 export function handleGetWebhookRequests(
   response?:
     | HandleGetWebhookRequestsResponse
@@ -1751,9 +1472,6 @@ export type HandleGetActivityLogsResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/activity_logs` operation.
- */
 export function handleGetActivityLogs(
   response?: HandleGetActivityLogsResponse | HttpResponseResolver<never, never>,
   options?: RequestHandlerOptions,
@@ -1785,9 +1503,6 @@ export type HandleGetDeveloperLogsResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `POST /v1/developer_logs` operation.
- */
 export function handleGetDeveloperLogs(
   response?:
     HandleGetDeveloperLogsResponse | HttpResponseResolver<never, GetDeveloperLogsData["body"]>,
@@ -1820,9 +1535,6 @@ export type HandleGetAiUsageDailyResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/ai_usage/daily` operation.
- */
 export function handleGetAiUsageDaily(
   response?: HandleGetAiUsageDailyResponse | HttpResponseResolver<never, never>,
   options?: RequestHandlerOptions,
@@ -1854,9 +1566,6 @@ export type HandleGetPaymentsResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/payments` operation.
- */
 export function handleGetPayments(
   response?: HandleGetPaymentsResponse | HttpResponseResolver<never, never>,
   options?: RequestHandlerOptions,
@@ -1888,9 +1597,6 @@ export type HandleGetLocalVariablesResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/files/{file_key}/variables/local` operation.
- */
 export function handleGetLocalVariables(
   response?:
     | HandleGetLocalVariablesResponse
@@ -1934,9 +1640,6 @@ export type HandleGetPublishedVariablesResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/files/{file_key}/variables/published` operation.
- */
 export function handleGetPublishedVariables(
   response?:
     | HandleGetPublishedVariablesResponse
@@ -1980,9 +1683,6 @@ export type HandlePostVariablesResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `POST /v1/files/{file_key}/variables` operation.
- */
 export function handlePostVariables(
   response?:
     | HandlePostVariablesResponse
@@ -2026,9 +1726,6 @@ export type HandleGetDevResourcesResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/files/{file_key}/dev_resources` operation.
- */
 export function handleGetDevResources(
   response?:
     | HandleGetDevResourcesResponse
@@ -2072,9 +1769,6 @@ export type HandlePostDevResourcesResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `POST /v1/dev_resources` operation.
- */
 export function handlePostDevResources(
   response?:
     HandlePostDevResourcesResponse | HttpResponseResolver<never, PostDevResourcesData["body"]>,
@@ -2107,9 +1801,6 @@ export type HandlePutDevResourcesResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `PUT /v1/dev_resources` operation.
- */
 export function handlePutDevResources(
   response?:
     HandlePutDevResourcesResponse | HttpResponseResolver<never, PutDevResourcesData["body"]>,
@@ -2142,9 +1833,6 @@ export type HandleDeleteDevResourceResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `DELETE /v1/files/{file_key}/dev_resources/{dev_resource_id}` operation.
- */
 export function handleDeleteDevResource(
   response?:
     | HandleDeleteDevResourceResponse
@@ -2190,9 +1878,6 @@ export type HandleGetLibraryAnalyticsComponentActionsResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/analytics/libraries/{file_key}/component/actions` operation.
- */
 export function handleGetLibraryAnalyticsComponentActions(
   response?:
     | HandleGetLibraryAnalyticsComponentActionsResponse
@@ -2236,9 +1921,6 @@ export type HandleGetLibraryAnalyticsComponentUsagesResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/analytics/libraries/{file_key}/component/usages` operation.
- */
 export function handleGetLibraryAnalyticsComponentUsages(
   response?:
     | HandleGetLibraryAnalyticsComponentUsagesResponse
@@ -2282,9 +1964,6 @@ export type HandleGetLibraryAnalyticsStyleActionsResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/analytics/libraries/{file_key}/style/actions` operation.
- */
 export function handleGetLibraryAnalyticsStyleActions(
   response?:
     | HandleGetLibraryAnalyticsStyleActionsResponse
@@ -2328,9 +2007,6 @@ export type HandleGetLibraryAnalyticsStyleUsagesResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/analytics/libraries/{file_key}/style/usages` operation.
- */
 export function handleGetLibraryAnalyticsStyleUsages(
   response?:
     | HandleGetLibraryAnalyticsStyleUsagesResponse
@@ -2374,9 +2050,6 @@ export type HandleGetLibraryAnalyticsVariableActionsResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/analytics/libraries/{file_key}/variable/actions` operation.
- */
 export function handleGetLibraryAnalyticsVariableActions(
   response?:
     | HandleGetLibraryAnalyticsVariableActionsResponse
@@ -2420,9 +2093,6 @@ export type HandleGetLibraryAnalyticsVariableUsagesResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/analytics/libraries/{file_key}/variable/usages` operation.
- */
 export function handleGetLibraryAnalyticsVariableUsages(
   response?:
     | HandleGetLibraryAnalyticsVariableUsagesResponse
@@ -2466,9 +2136,6 @@ export type HandleGetOEmbedResponse = {
   status?: 200;
 };
 
-/**
- * Handler for the `GET /v1/oembed` operation.
- */
 export function handleGetOEmbed(
   response?: HandleGetOEmbedResponse | HttpResponseResolver<never, never>,
   options?: RequestHandlerOptions,
@@ -2496,225 +2163,56 @@ export function handleGetOEmbed(
 }
 
 export type MswHandlerFactories = {
-  /**
-   * Handler for the `GET /v1/files/{file_key}` operation.
-   */
   getFile: typeof handleGetFile;
-  /**
-   * Handler for the `GET /v1/files/{file_key}/nodes` operation.
-   */
   getFileNodes: typeof handleGetFileNodes;
-  /**
-   * Handler for the `GET /v1/images/{file_key}` operation.
-   */
   getImages: typeof handleGetImages;
-  /**
-   * Handler for the `GET /v1/files/{file_key}/images` operation.
-   */
   getImageFills: typeof handleGetImageFills;
-  /**
-   * Handler for the `GET /v1/files/{file_key}/meta` operation.
-   */
   getFileMeta: typeof handleGetFileMeta;
-  /**
-   * Handler for the `POST /v1/files/{file_key}/duplicate` operation.
-   */
-  postFileDuplicate: typeof handlePostFileDuplicate;
-  /**
-   * Handler for the `POST /v1/teams` operation.
-   */
-  postTeam: typeof handlePostTeam;
-  /**
-   * Handler for the `GET /v1/teams/{team_id}` operation.
-   */
   getTeam: typeof handleGetTeam;
-  /**
-   * Handler for the `POST /v1/teams/{team_id}/invites` operation.
-   */
-  postTeamInvites: typeof handlePostTeamInvites;
-  /**
-   * Handler for the `POST /v1/teams/{team_id}/folders` operation.
-   */
-  postTeamFolder: typeof handlePostTeamFolder;
-  /**
-   * Handler for the `GET /v2/teams/{team_id}/folders` operation.
-   */
   getTeamFolders: typeof handleGetTeamFolders;
-  /**
-   * Handler for the `GET /v2/folders/{folder_id}/folders` operation.
-   */
   getFolderFolders: typeof handleGetFolderFolders;
-  /**
-   * Handler for the `GET /v2/folders/{folder_id}/files` operation.
-   */
   getFolderFiles: typeof handleGetFolderFiles;
-  /**
-   * Handler for the `GET /v2/folders/{folder_id}/meta` operation.
-   */
   getFolderMeta: typeof handleGetFolderMeta;
-  /**
-   * Handler for the `GET /v1/files/{file_key}/versions` operation.
-   */
   getFileVersions: typeof handleGetFileVersions;
-  /**
-   * Handler for the `GET /v1/files/{file_key}/comments` operation.
-   */
   getComments: typeof handleGetComments;
-  /**
-   * Handler for the `POST /v1/files/{file_key}/comments` operation.
-   */
   postComment: typeof handlePostComment;
-  /**
-   * Handler for the `DELETE /v1/files/{file_key}/comments/{comment_id}` operation.
-   */
   deleteComment: typeof handleDeleteComment;
-  /**
-   * Handler for the `DELETE /v1/files/{file_key}/comments/{comment_id}/reactions` operation.
-   */
   deleteCommentReaction: typeof handleDeleteCommentReaction;
-  /**
-   * Handler for the `GET /v1/files/{file_key}/comments/{comment_id}/reactions` operation.
-   */
   getCommentReactions: typeof handleGetCommentReactions;
-  /**
-   * Handler for the `POST /v1/files/{file_key}/comments/{comment_id}/reactions` operation.
-   */
   postCommentReaction: typeof handlePostCommentReaction;
-  /**
-   * Handler for the `GET /v1/me` operation.
-   */
   getMe: typeof handleGetMe;
-  /**
-   * Handler for the `GET /v1/teams/{team_id}/components` operation.
-   */
   getTeamComponents: typeof handleGetTeamComponents;
-  /**
-   * Handler for the `GET /v1/files/{file_key}/components` operation.
-   */
   getFileComponents: typeof handleGetFileComponents;
-  /**
-   * Handler for the `GET /v1/components/{key}` operation.
-   */
   getComponent: typeof handleGetComponent;
-  /**
-   * Handler for the `GET /v1/teams/{team_id}/component_sets` operation.
-   */
   getTeamComponentSets: typeof handleGetTeamComponentSets;
-  /**
-   * Handler for the `GET /v1/files/{file_key}/component_sets` operation.
-   */
   getFileComponentSets: typeof handleGetFileComponentSets;
-  /**
-   * Handler for the `GET /v1/component_sets/{key}` operation.
-   */
   getComponentSet: typeof handleGetComponentSet;
-  /**
-   * Handler for the `GET /v1/teams/{team_id}/styles` operation.
-   */
   getTeamStyles: typeof handleGetTeamStyles;
-  /**
-   * Handler for the `GET /v1/files/{file_key}/styles` operation.
-   */
   getFileStyles: typeof handleGetFileStyles;
-  /**
-   * Handler for the `GET /v1/styles/{key}` operation.
-   */
   getStyle: typeof handleGetStyle;
-  /**
-   * Handler for the `GET /v2/webhooks` operation.
-   */
   getWebhooks: typeof handleGetWebhooks;
-  /**
-   * Handler for the `POST /v2/webhooks` operation.
-   */
   postWebhook: typeof handlePostWebhook;
-  /**
-   * Handler for the `DELETE /v2/webhooks/{webhook_id}` operation.
-   */
   deleteWebhook: typeof handleDeleteWebhook;
-  /**
-   * Handler for the `GET /v2/webhooks/{webhook_id}` operation.
-   */
   getWebhook: typeof handleGetWebhook;
-  /**
-   * Handler for the `PUT /v2/webhooks/{webhook_id}` operation.
-   */
   putWebhook: typeof handlePutWebhook;
-  /**
-   * Handler for the `GET /v2/webhooks/{webhook_id}/requests` operation.
-   */
   getWebhookRequests: typeof handleGetWebhookRequests;
-  /**
-   * Handler for the `GET /v1/activity_logs` operation.
-   */
   getActivityLogs: typeof handleGetActivityLogs;
-  /**
-   * Handler for the `POST /v1/developer_logs` operation.
-   */
   getDeveloperLogs: typeof handleGetDeveloperLogs;
-  /**
-   * Handler for the `GET /v1/ai_usage/daily` operation.
-   */
   getAiUsageDaily: typeof handleGetAiUsageDaily;
-  /**
-   * Handler for the `GET /v1/payments` operation.
-   */
   getPayments: typeof handleGetPayments;
-  /**
-   * Handler for the `GET /v1/files/{file_key}/variables/local` operation.
-   */
   getLocalVariables: typeof handleGetLocalVariables;
-  /**
-   * Handler for the `GET /v1/files/{file_key}/variables/published` operation.
-   */
   getPublishedVariables: typeof handleGetPublishedVariables;
-  /**
-   * Handler for the `POST /v1/files/{file_key}/variables` operation.
-   */
   postVariables: typeof handlePostVariables;
-  /**
-   * Handler for the `GET /v1/files/{file_key}/dev_resources` operation.
-   */
   getDevResources: typeof handleGetDevResources;
-  /**
-   * Handler for the `POST /v1/dev_resources` operation.
-   */
   postDevResources: typeof handlePostDevResources;
-  /**
-   * Handler for the `PUT /v1/dev_resources` operation.
-   */
   putDevResources: typeof handlePutDevResources;
-  /**
-   * Handler for the `DELETE /v1/files/{file_key}/dev_resources/{dev_resource_id}` operation.
-   */
   deleteDevResource: typeof handleDeleteDevResource;
-  /**
-   * Handler for the `GET /v1/analytics/libraries/{file_key}/component/actions` operation.
-   */
   getLibraryAnalyticsComponentActions: typeof handleGetLibraryAnalyticsComponentActions;
-  /**
-   * Handler for the `GET /v1/analytics/libraries/{file_key}/component/usages` operation.
-   */
   getLibraryAnalyticsComponentUsages: typeof handleGetLibraryAnalyticsComponentUsages;
-  /**
-   * Handler for the `GET /v1/analytics/libraries/{file_key}/style/actions` operation.
-   */
   getLibraryAnalyticsStyleActions: typeof handleGetLibraryAnalyticsStyleActions;
-  /**
-   * Handler for the `GET /v1/analytics/libraries/{file_key}/style/usages` operation.
-   */
   getLibraryAnalyticsStyleUsages: typeof handleGetLibraryAnalyticsStyleUsages;
-  /**
-   * Handler for the `GET /v1/analytics/libraries/{file_key}/variable/actions` operation.
-   */
   getLibraryAnalyticsVariableActions: typeof handleGetLibraryAnalyticsVariableActions;
-  /**
-   * Handler for the `GET /v1/analytics/libraries/{file_key}/variable/usages` operation.
-   */
   getLibraryAnalyticsVariableUsages: typeof handleGetLibraryAnalyticsVariableUsages;
-  /**
-   * Handler for the `GET /v1/oembed` operation.
-   */
   getOEmbed: typeof handleGetOEmbed;
 };
 
@@ -2739,11 +2237,7 @@ export function createMswHandlers(config: RequestHandlerOptions = {}): CreateMsw
     getImages: wrap(handleGetImages),
     getImageFills: wrap(handleGetImageFills),
     getFileMeta: wrap(handleGetFileMeta),
-    postFileDuplicate: wrap(handlePostFileDuplicate),
-    postTeam: wrap(handlePostTeam),
     getTeam: wrap(handleGetTeam),
-    postTeamInvites: wrap(handlePostTeamInvites),
-    postTeamFolder: wrap(handlePostTeamFolder),
     getTeamFolders: wrap(handleGetTeamFolders),
     getFolderFolders: wrap(handleGetFolderFolders),
     getFolderFiles: wrap(handleGetFolderFiles),
@@ -2816,9 +2310,6 @@ export function createMswHandlers(config: RequestHandlerOptions = {}): CreateMsw
       invoke(pick.getFileNodes, overrides.getFileNodes),
       invoke(pick.getImageFills, overrides.getImageFills),
       invoke(pick.getFileMeta, overrides.getFileMeta),
-      invoke(pick.postFileDuplicate, overrides.postFileDuplicate),
-      invoke(pick.postTeamInvites, overrides.postTeamInvites),
-      invoke(pick.postTeamFolder, overrides.postTeamFolder),
       invoke(pick.getTeamFolders, overrides.getTeamFolders),
       invoke(pick.getFolderFolders, overrides.getFolderFolders),
       invoke(pick.getFolderFiles, overrides.getFolderFiles),
@@ -2845,7 +2336,6 @@ export function createMswHandlers(config: RequestHandlerOptions = {}): CreateMsw
       invoke(pick.deleteWebhook, overrides.deleteWebhook),
       invoke(pick.getWebhook, overrides.getWebhook),
       invoke(pick.putWebhook, overrides.putWebhook),
-      invoke(pick.postTeam, overrides.postTeam),
       invoke(pick.getMe, overrides.getMe),
       invoke(pick.getWebhooks, overrides.getWebhooks),
       invoke(pick.postWebhook, overrides.postWebhook),

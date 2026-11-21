@@ -1,12 +1,11 @@
 import { define } from "gunshi";
 
-import { configureClient } from "../../api/client.ts";
+import { configureClient, getMe } from "../../api/client.ts";
 import { configDir } from "../../config/config.ts";
 import { CliError, errorHints } from "../../errors.ts";
 import { globalArgs } from "../../global-args.ts";
 import { accessTokenFor } from "../../helpers.ts";
 import { resolveConfiguredTokenSource } from "../../profiles.ts";
-import { getMe } from "../../types/figma/sdk.gen.ts";
 
 export const statusCommand = define({
   name: "status",

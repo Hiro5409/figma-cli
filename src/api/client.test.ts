@@ -4,8 +4,7 @@ import { http, HttpResponse } from "msw/http";
 
 import { createNetwork } from "../../test/network.ts";
 import { handleGetMe } from "../types/figma/msw.gen.ts";
-import { getMe } from "../types/figma/sdk.gen.ts";
-import { client, configureClient } from "./client.ts";
+import { client, configureClient, getMe } from "./client.ts";
 
 const ME = {
   id: "1",
@@ -80,6 +79,40 @@ describe("API client", () => {
     expect(callCount).toBe(3);
   });
 
+  test("a developer log search sent as POST is retried as a read", async () => {
+    let callCount = 0;
+    network.use(
+      http.post("https://api.figma.com/v1/developer_logs", () => {
+        callCount++;
+        if (callCount < 2) return HttpResponse.json({ status: 503 }, { status: 503 });
+        return HttpResponse.json({ status: 200, error: false, meta: { items: [] } });
+      }),
+    );
+    configureClient("figd_test");
+
+    const { data } = await client.post({ url: "/v1/developer_logs", body: {} });
+    expect(data).toMatchObject({ meta: { items: [] } });
+    expect(callCount).toBe(2);
+  });
+
+  test("a redirect is refused, so the token never reaches another host", async () => {
+    let leaked = 0;
+    network.use(
+      handleGetMe(
+        () =>
+          new HttpResponse(null, { status: 307, headers: { Location: "https://other.test/me" } }),
+      ),
+      http.get("https://other.test/me", () => {
+        leaked++;
+        return HttpResponse.json(ME);
+      }),
+    );
+    configureClient("figd_test");
+
+    await expect(getMe()).rejects.toBeDefined();
+    expect(leaked).toBe(0);
+  });
+
   test("fails at once when Figma asks to wait longer than a minute", async () => {
     let callCount = 0;
     network.use(
@@ -143,7 +176,7 @@ describe("API client", () => {
     },
   );
 
-  test("an unreadable successful write response requires checking the comment", async () => {
+  test("an unreadable successful write response requires reading the resource", async () => {
     network.use(
       http.post(
         "https://api.figma.com/v1/files/key/comments",
@@ -168,7 +201,7 @@ describe("API client", () => {
     await expect(getMe()).rejects.toMatchObject({ code: "UPSTREAM_FAILURE" });
   });
 
-  test("a lost write response requires checking the comment before retrying", async () => {
+  test("a lost write response requires reading the resource before retrying", async () => {
     let accepted = 0;
     network.use(
       http.post("https://api.figma.com/v1/files/key/comments", () => {

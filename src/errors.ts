@@ -2,10 +2,10 @@ export const errorHints = {
   authentication:
     'Run "figma-api auth login --profile <name>" with a Figma personal access token, then retry with --profile <name>. Alternatively, set FIGMA_ACCESS_TOKEN.',
   access:
-    "Confirm that the token's account can open the file and that the token has the scope listed in the command's --help. Personal access tokens expire; run \"figma-api auth login --profile <name> --replace\" with a new token if this one has.",
+    "Confirm that the token's account can open the resource, and that the token has the scope and type named in the command's --help. Personal access tokens expire; run \"figma-api auth login --profile <name> --replace\" with a new token if this one has.",
   invalidValue: "Correct the value shown in the error and retry the command.",
   notFound:
-    "Check the file key or URL, and the node and comment IDs, with a read command such as file meta or comment list, then retry.",
+    'Check the file key and the other IDs with a read command such as "figma-api file meta show" or "figma-api file comment list", then retry.',
   retryLater:
     "Wait before retrying the same command. Keep the request unchanged until it succeeds.",
 } as const;
@@ -17,7 +17,6 @@ export type CliErrorCode =
   | "INVALID_INPUT"
   | "NOT_FOUND"
   | "OUTCOME_UNKNOWN"
-  | "PARTIAL_SUCCESS"
   | "RATE_LIMITED"
   | "UNEXPECTED"
   | "UPSTREAM_FAILURE";
@@ -71,7 +70,7 @@ export class OutcomeUnknownError extends CliError {
       code: "OUTCOME_UNKNOWN",
       cause: options.cause,
       why: "Figma may have accepted the write before figma-cli lost confirmation.",
-      hint: "Inspect the affected comment or reaction in Figma before retrying. Do not retry automatically.",
+      hint: "Read the affected resource before retrying. Do not retry automatically.",
     });
     this.name = "OutcomeUnknownError";
   }

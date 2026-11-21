@@ -2,7 +2,7 @@ import * as clack from "@clack/prompts";
 import { define } from "gunshi";
 import { args, boolean, merge, withDefault } from "gunshi/combinators";
 
-import { configureClient } from "../../api/client.ts";
+import { configureClient, getMe } from "../../api/client.ts";
 import { configDir, loadConfig, saveConfig } from "../../config/config.ts";
 import { loadCredentials, updateCredentials } from "../../config/credentials.ts";
 import { CliError } from "../../errors.ts";
@@ -12,12 +12,10 @@ import {
   defaultProfileAfterLogin,
   resolveConfiguredLoginProfile,
 } from "../../profiles.ts";
-import { getMe } from "../../types/figma/sdk.gen.ts";
 
 const TOKEN_GUIDE =
   "In Figma, open Settings > Security > Personal access tokens and generate a token.\n" +
-  "Grant current_user:read, which login uses to verify the token, and the scopes your commands need:\n" +
-  "file_content:read, file_metadata:read, file_versions:read, library_content:read, file_comments:read, file_comments:write.\n" +
+  "Grant current_user:read, which login uses to verify the token, and the scopes named in the --help of the commands you run.\n" +
   "https://developers.figma.com/docs/rest-api/authentication/";
 
 export type TokenInput = {

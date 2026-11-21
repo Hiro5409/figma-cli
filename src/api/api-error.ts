@@ -76,14 +76,14 @@ function guidance(status: number, message: string | undefined, headers?: Headers
     return {
       code: "ACCESS_DENIED",
       exitCode: 2,
-      why: "The token cannot access this file or lacks the scope this request needs.",
+      why: "The token cannot access this resource, or lacks the scope or token type this request needs.",
       hint: errorHints.access,
     };
   }
   if (status === 404) {
     return {
       code: "NOT_FOUND",
-      why: "Figma could not find the requested file, node, or comment.",
+      why: "Figma could not find the requested resource.",
       hint: errorHints.notFound,
     };
   }
