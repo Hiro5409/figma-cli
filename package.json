@@ -1,6 +1,6 @@
 {
   "name": "@hiro5409/figma-cli",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Agent-friendly command line interface for the Figma REST API.",
   "keywords": [
     "bun",
